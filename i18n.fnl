@@ -7,7 +7,8 @@
       ;; English
       :en {:description [:div {}
                          [:p {} [:b {} "Found ICE"] " is a tool to write down a possible ICE sighting using the SALUTE template (size, activity, location, uniform, time, equipment) and send it to those opposing ICE in the area."]
-                         [:p {} "This tool is based on the template hosted on salute.kyr.digital."]]
+                         [:p {} "This tool is based on the template hosted on "
+                          [:a {:href "https://salute.kyr.digital"} "salute.kyr.digital"]]]
            :select-language "Select language"
            :language "Language"
            :fuck-cops "Fuck Cops 🐖"
