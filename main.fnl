@@ -64,7 +64,7 @@
 
 (fn send-to-chat []
   (let [obj (js.new js.global.Object)]
-    (set (. obj :text) (.. "🚨 " (i18n.text :spotted) " @ "
+    (set (. obj :text) (.. "🚨 " (i18n.text :spotted) " "
                            (if (is-empty? :location)
                                ""
                                RV.id.location.value)
@@ -154,7 +154,7 @@
           [:header {} "Preview message"]
           
           [:div {:class "example"}
-           [:p {} (.. "🚨 " (i18n.text :spotted) " @ "
+           [:p {} (.. "🚨 " (i18n.text :spotted) " "
                       (i18n.text :location-placeholder)
                       (.. ", " (i18n.text :time-placeholder)))]
            [:p {} (.. (i18n.text :size-placeholder)
@@ -166,7 +166,7 @@
           [:header {} "Message"]
           
           [:div {:class ""}
-           [:p {} (.. "🚨 " (i18n.text :spotted) " @ "
+           [:p {} (.. "🚨 " (i18n.text :spotted) " "
                       (if (is-empty? :location)
                           ""
                           RV.id.location.value)

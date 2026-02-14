@@ -14,7 +14,7 @@
            :fuck-cops "Fuck Cops 🐖"
            :anti-capitalist "This is anti-capitalist software, released for free use by individuals and organizations that do not operate by capitalist principles."
 
-           :spotted "SPOTTED"
+           :spotted "SPOTTED @"
            
            :size "Size"
            :size-placeholder "5 DHS cops"
@@ -52,7 +52,7 @@
            :fuck-cops "¡Malditos malos policías! 🐖"
            :anti-capitalist "Este es un software anticapitalista, publicado para uso gratuito por personas y organizaciones que no operan según principios capitalistas."
 
-           :spotted "Vi a"
+           :spotted "AVISTAMIENTO en"
            
            :size "Tamaño"
            :size-placeholder "5 agentes del DHS"
