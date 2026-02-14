@@ -204,7 +204,7 @@
           [:option {:value "es"} "Spanish"]]
          [:div {:id "version"}
           [:hr {}]
-          [:p {} "Version 0.1.1c"]
+          [:p {} "Version 0.1.2"]
           [:p {} (i18n.text :fuck-cops)]
           [:hr {}]
           [:p {:class "license"} (i18n.text :anti-capitalist)]
