@@ -1,0 +1,50 @@
+/* Make sure to vertically center the text that's beside the icon */
+#title {
+   color: var(--pico-primary);
+   display: flex;
+   align-items: center;
+   gap: 0.5em;
+   justify-content: flex-start;
+   align-content: flex-start;
+}
+
+form > label {
+    font-size: 1.2rem;
+}
+
+.label-icon {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+}
+
+.label-icon svg {
+    height: 21px;
+    width: 21px;
+}
+
+.example p {
+    color: var(--pico-muted-color);
+}
+
+#version {
+   color: var(--pico-muted-color);
+   text-align: center;
+}
+
+#version p {
+   margin: 0;
+}
+
+.license {
+   color: var(--pico-muted-color);
+   padding-bottom: 0.5em;
+}
+
+#donate {
+    padding: 0;
+    background: none;
+    border: none;
+    color: var(--pico-muted-color);
+}
+
