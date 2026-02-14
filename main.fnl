@@ -64,7 +64,7 @@
 
 (fn send-to-chat []
   (let [obj (js.new js.global.Object)]
-    (set (. obj :text) (.. "🚨 SPOTTED @ "
+    (set (. obj :text) (.. "🚨 " (i18n.text :spotted) " @ "
                            (if (is-empty? :location)
                                ""
                                RV.id.location.value)
@@ -79,10 +79,10 @@
                                (.. " " RV.id.activity.value))
                            (if (is-empty? :uniform)
                                ""
-                               (.. " in " RV.id.uniform.value))
+                               (.. " " (i18n.text :in) " " RV.id.uniform.value))
                            (if (is-empty? :equipment)
                                ""
-                               (.. " with " RV.id.equipment.value))))
+                               (.. " " (i18n.text :with) " " RV.id.equipment.value))))
     (webxdc:sendToChat obj)))
 
 ;; Render function for rendering the whole page.
@@ -97,7 +97,7 @@
           [:header {}
            [:strong {} "Thanks for using!"]]
           [:p {}
-           "You can leave feedback and download more tools on durianbean.itch.io if you're interested."]
+           "You can leave feedback and download more tools on " [:a {:href "durianbean.itch.io"} "durianbean.itch.io"] " if you're interested."]
           [:p {} "Let me know what you think!"]
           [:button {:ariaLabel "close" :onclick (fn []
                                                   (set state.feedback false)
@@ -109,27 +109,27 @@
      [:fieldset {}
       ;; Size
       ;; ---------
-      [:label {:for "size"} [:div {:class "label-icon"} icons.people [:strong {} "Size"]]]
+      [:label {:for "size"} [:div {:class "label-icon"} icons.people [:strong {} (i18n.text :size)]]]
       (input-template :size)
       
       ;; Activity
       ;; ---------
-      [:label {:for "activity"} [:div {:class "label-icon"} icons.donut [:strong {} "Activity"]]]
+      [:label {:for "activity"} [:div {:class "label-icon"} icons.donut [:strong {} (i18n.text :activity)]]]
       (input-template :activity)
       
       ;; Location
       ;; ---------
-      [:label {:for "location"} [:div {:class "label-icon"} icons.location [:strong {} "Location"]]]
+      [:label {:for "location"} [:div {:class "label-icon"} icons.location [:strong {} (i18n.text :location)]]]
       (input-template :location)
       
       ;; Uniform
       ;; ---------
-      [:label {:for "uniform"} [:div {:class "label-icon"} icons.uniform [:strong {} "Uniform"]]]
+      [:label {:for "uniform"} [:div {:class "label-icon"} icons.uniform [:strong {} (i18n.text :uniform)]]]
       (input-template :uniform)
       
       ;; Time
       ;; ---------
-      [:label {:for "time"} [:div {:class "label-icon"} icons.time [:strong {} "Time"]]]
+      [:label {:for "time"} [:div {:class "label-icon"} icons.time [:strong {} (i18n.text :time)]]]
       [:fieldset {:role "group"}
        [:input {:id "time"
                 :rvid "time"
@@ -144,7 +144,7 @@
 
       ;; Equipment
       ;; ---------
-      [:label {:for "equipment"} [:div {:class "label-icon"} icons.equipment [:strong {} "Equipment"]]]
+      [:label {:for "equipment"} [:div {:class "label-icon"} icons.equipment [:strong {} (i18n.text :equipment)]]]
       (input-template :equipment)
       
      ;; Only display the example when all the inputs are empty
@@ -154,19 +154,19 @@
           [:header {} "Preview message"]
           
           [:div {:class "example"}
-           [:p {} (.. "🚨 SPOTTED @ "
+           [:p {} (.. "🚨 " (i18n.text :spotted) " @ "
                       (i18n.text :location-placeholder)
                       (.. ", " (i18n.text :time-placeholder)))]
            [:p {} (.. (i18n.text :size-placeholder)
                       (.. " " (i18n.text :activity-placeholder))
-                      (.. " in " (i18n.text :uniform-placeholder))
-                      (.. " with " (i18n.text :equipment-placeholder)))]]]
+                      (.. " " (i18n.text :in) " " (i18n.text :uniform-placeholder))
+                      (.. " " (i18n.text :with) " " (i18n.text :equipment-placeholder)))]]]
          
          [:article {}
           [:header {} "Message"]
           
           [:div {:class ""}
-           [:p {} (.. "🚨 SPOTTED @ "
+           [:p {} (.. "🚨 " (i18n.text :spotted) " @ "
                       (if (is-empty? :location)
                           ""
                           RV.id.location.value)
@@ -181,10 +181,10 @@
                           (.. " " RV.id.activity.value))
                       (if (is-empty? :uniform)
                           ""
-                          (.. " in " RV.id.uniform.value))
+                          (.. " " (i18n.text :in) " " RV.id.uniform.value))
                       (if (is-empty? :equipment)
                           ""
-                          (.. " with " RV.id.equipment.value)))]]])
+                          (.. " " (i18n.text :with) " " RV.id.equipment.value)))]]])
 
       [:input {:type "button" :class "primary" :disabled (if (form-empty?) true false) :value "Send" :onclick send-to-chat}]
       [:input {:type "button" :class "outline" :value "Reset" :onclick reset :disabled (if (form-empty?) true false)}]]
@@ -200,10 +200,11 @@
          (i18n.text :description)
          [:select {:name "select" :ariaLabel (i18n.text :select-language) :onchange i18n.setLang}
           [:option {:selected "" :value "" :disabled ""} (i18n.text :language)]
-          [:option {:value "en"} "English"]]
+          [:option {:value "en"} "English"]
+          [:option {:value "es"} "Spanish"]]
          [:div {:id "version"}
           [:hr {}]
-          [:p {} "Version 0.1"]
+          [:p {} "Version 0.1.1c"]
           [:p {} (i18n.text :fuck-cops)]
           [:hr {}]
           [:p {:class "license"} (i18n.text :anti-capitalist)]
