@@ -4,7 +4,7 @@
 
 Found ICE is a tool to write down a possible ICE sighting using the SALUTE template (size, activity, location, uniform, time, equipment) and send it to those opposing ICE in the area. This is an app for [Delta Chat](https://delta.chat/en/).
 
-You can get it on [itch.io](https://durianbean.itch.io/found-ice), [webxdc.org](https://webxdc.org/apps/#found-ice), or in the [release page](https://codeberg.org/durian/found-ice/releases)! 
+You can get it on [itch.io](https://durianbean.itch.io/found-ice), [webxdc.org](https://webxdc.org/apps/#durian-ice), or in the [release page](https://codeberg.org/durian/found-ice/releases)! 
 
 [![Available on itch.io button](itch.png)](https://durianbean.itch.io/found-ice)
 
