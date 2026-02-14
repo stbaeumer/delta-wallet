@@ -18,17 +18,9 @@ Please support them if you can!
 
 - [Fennel](https://fennel-lang.org/): Programming language that runs on the Lua runtime (MIT License) (version 1.5.3)
 - [Fengari](https://github.com/fengari-lua/fengari): Lua VM written in JS (MIT License) (version v0.1.4)
-- [Shelf](https://github.com/dglittle/shelf): Remarkably small, remarkably useful CRDT (MIT License) (commit efacd67)
 - [Pico CSS](https://picocss.com/): A minimalist and lightweight starter kit (MIT License) (version v2.1.1)
 - [Solar icon set](https://icon-sets.iconify.design/solar/) (CC BY 4.0 License)
 - [RetroV](https://ratfactor.com/retrov/): Virtual DOM rendering library (MIT License) (commit 3fed42e)
-- [Day.js](https://github.com/iamkun/dayjs/) (MIT License) (version 1.11.18)
-
-## Translations!
-
-- Tagalog (durian)
-- German (anonymous)
-- Farsi (https://codeberg.org/farooqkz)
 
 ## Introduction for devs
 
@@ -125,42 +117,16 @@ The HTML is represented as a Lua table in `index.fnl` which `build.fnl` reads an
            :lua  [:script {:src asset :type "application/lua" :async true}])))))
 ```
 
-I prefer to inline everything to have a nice single `index.html` output, but there's no technical reason for that I just like it that way. You'll notice though that `webxdc.js` is not inlined, however. This is because Delta Chat (and other Webxdc compatible clients) provide this file themselves so we don't actually want to bundle the `webxdc.js` file that's inside our repository.
-
 It also reads and compiles our Fennel files into Lua which is written inside `index.html` and also `main.lua`. The files that we want to build are in the `files` table. Finally, it creates a zip file called `dist/time.xdc` which we can then share with other people.
 
 ```fennel
 ;; Create our webxdc app
 (let [commands ["mkdir -p dist"
                 "rm -rf dist/time.xdc"
-                "zip -9 --recurse-paths dist/time.xdc index.html icon.jpg manifest.toml"]]
+                "zip -9 --recurse-paths dist/salute.xdc index.html icon.jpg manifest.toml"]]
   (each [_ cmd (ipairs commands)]
     (print "Command" cmd)
     (os.execute cmd)))
 ```
 
 Additionally, `build.fnl` also watches for file changes and re-runs the whole build process automatically! To quit, simply press Ctrl+C.
-
-### How the app works
-
-#### index.js
-
-The story of our program begins at `index.js`. This initializes our local "database" which is stored in `window.crdt` and basically manages sending our data through `webxdc.sendUpdate` and receiving our data through `webxdc.setUpdateListener` and keeps the database (which is a [CRDT](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)) synced as it sends and receives.
-
-It exports this database and send and receives functions by adding them to the `window` object so that we can access these from Fennel.
-
-#### main.fnl
-
-Most of the logic of the app resides in the Fennel files and it all happens in `main.fnl`. This file is responsible for displaying the UI, displaying everyone's clocks, and also handling inputs like sharing time zone.
-
-#### html.fnl
-
-This file converts a Lua table that represents our HTML and converts it into virtual DOM that's handled by RetroV. Calling `render` checks for any changes in our data is then the difference is displayed by this library.
-
-#### icons.fnl
-
-All our SVG icons reside in this file.
-
-#### i18n.fnl
-
-Translation strings are stored in this file. The current locale is stored in `localStorage`, and it uses the locale key to use the right strings. If a key-value is missing, it falls back to `en` locale.
