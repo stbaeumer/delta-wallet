@@ -22,6 +22,10 @@ Please support them if you can!
 - [Solar icon set](https://icon-sets.iconify.design/solar/) (CC BY 4.0 License)
 - [RetroV](https://ratfactor.com/retrov/): Virtual DOM rendering library (MIT License) (commit 3fed42e)
 
+## Translations
+
+- Spanish (by [adb](https://codeberg.org/adbenitez))
+
 ## Introduction for devs
 
 This app is written in [Fennel](https://fennel-lang.org/) which is compiled into [Lua](https://www.lua.org/) which then runs on [Fengari](https://github.com/fengari-lua/fengari/) which is a Lua VM written in JavaScript. Now why are we standing on the computer language equivalent of the [Tower of Babel](https://en.wikipedia.org/wiki/Tower_of_Babel)? Because it's fun to write in Fennel and I wanted it to run on the browser!
