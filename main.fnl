@@ -136,7 +136,7 @@
                 :placeholder (i18n.text :time-placeholder)
                 :oninput (fn [el] (app.render))}]
        [:input {:type "button"
-                :value "Now"
+                :value (i18n.text :now)
                 :onclick #(let [date (js.new js.global.Date)]
                             (set RV.id.time.value (date:toLocaleTimeString i18n.locale))
                             (app.render))}]]
@@ -204,7 +204,7 @@
           [:option {:value "es"} "Spanish"]]
          [:div {:id "version"}
           [:hr {}]
-          [:p {} "Version 0.1.2"]
+          [:p {} "Version 0.1.3"]
           [:p {} (i18n.text :fuck-cops)]
           [:hr {}]
           [:p {:class "license"} (i18n.text :anti-capitalist)]

@@ -35,7 +35,8 @@
            :time "Time"
            :time-placeholder "1:12 PM"
            :time-description "When did you witness this?"
-
+           :now "Now"
+           
            :equipment "Equipment"
            :equipment-placeholder "guns and handcuffs"
            :equipment-description "What do they have with them?"
@@ -73,7 +74,8 @@
            :time "Hora"
            :time-placeholder "1:12 PM"
            :time-description "¿Cuando fuiste testigo de esto?"
-
+           :now "Ahora"
+           
            :equipment "Equipo"
            :equipment-placeholder "armas y esposas"
            :equipment-description "¿Qué tienen consigo?"
