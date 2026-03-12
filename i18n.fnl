@@ -50,7 +50,7 @@
                          [:p {} "Esta herramienta se basa en la plantilla alojada en " [:a {:href "https://salute.kyr.digital"} "salute.kyr.digital"]]]
            :select-language "Seleccionar idioma"
            :language "Idioma"
-           :fuck-cops "¡Malditos malos policías! 🐖"
+           :fuck-cops "¡Chinga la migra! 🐖"
            :anti-capitalist "Este es un software anticapitalista, publicado para uso gratuito por personas y organizaciones que no operan según principios capitalistas."
 
            :spotted "AVISTAMIENTO en"
@@ -103,8 +103,16 @@
         text
         (. i18n.data :en key))))
 
+(fn checkLang []
+  ;; Default is English
+  (var found :en)
+  ;; If the user agent prefers a different language, we switch to that
+  (each [_ lang (ipairs [:en :es])]
+    (if (string.match js.global.navigator.language (.. "^" lang))
+        (set found lang))) found)
+
 (let [saved (js.global.localStorage:getItem :lang)
-      lang  (if (= saved js.null) :en saved)]
+      lang  (if (= saved js.null) (checkLang) saved)]
   (case lang
     :en    (lang-apply lang :ltr)
     :es    (lang-apply lang :ltr)))
