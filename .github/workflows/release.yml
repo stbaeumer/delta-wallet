@@ -58,35 +58,24 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y lua5.3 lua-filesystem lua-posix zip curl
+          sudo apt-get install -y lua5.3 lua-filesystem lua-posix zip curl make git
 
-          # Install fennel from GitHub raw with fallbacks.
-          FENNEL_VERSION="1.5.3"
-          FENNEL_URL=""
-          for url in \
-            "https://raw.githubusercontent.com/bakpakin/Fennel/v${FENNEL_VERSION}/fennel" \
-            "https://raw.githubusercontent.com/bakpakin/Fennel/${FENNEL_VERSION}/fennel" \
-            "https://raw.githubusercontent.com/bakpakin/Fennel/main/fennel"; do
-            if curl -fsSL "$url" -o /tmp/fennel; then
-              FENNEL_URL="$url"
-              break
-            fi
-          done
+          # Prefer official versioned download; fall back to source build.
+          FENNEL_VERSION="1.6.1"
+          FENNEL_URL="https://fennel-lang.org/downloads/fennel-${FENNEL_VERSION}"
 
-          if [ -z "$FENNEL_URL" ]; then
-            echo "Failed to download fennel from all known URLs."
-            exit 1
+          if curl -fsSL "$FENNEL_URL" -o /tmp/fennel && head -n 1 /tmp/fennel | grep -q '^#!'; then
+            chmod +x /tmp/fennel
+            sudo install -m 0755 /tmp/fennel /usr/local/bin/fennel
+            echo "Installed fennel from: $FENNEL_URL"
+          else
+            echo "Official download failed, building fennel from source..."
+            rm -rf /tmp/fennel-src
+            git clone --depth 1 https://git.sr.ht/~technomancy/fennel /tmp/fennel-src
+            make -C /tmp/fennel-src fennel
+            sudo install -m 0755 /tmp/fennel-src/fennel /usr/local/bin/fennel
           fi
 
-          if ! head -n 1 /tmp/fennel | grep -q '^#!'; then
-            echo "Downloaded fennel file is invalid (missing shebang)."
-            head -n 5 /tmp/fennel || true
-            exit 1
-          fi
-
-          chmod +x /tmp/fennel
-          sudo install -m 0755 /tmp/fennel /usr/local/bin/fennel
-          echo "Installed fennel from: $FENNEL_URL"
           fennel --version
       
       - name: Build app
