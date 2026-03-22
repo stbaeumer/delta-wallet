@@ -82,6 +82,13 @@ This compiles the Fennel code to Lua, bundles everything, and creates:
 
 This is [open-source software](https://opensource.org/), released for free use.
 
+### Base App Attribution
+
+This project is based on the Found ICE app by durianbean:
+- Project: https://durianbean.itch.io/found-ice
+
+Many thanks to the original author for the idea and foundation.
+
 ### App Icon Attribution
 
 The app icon file [icon.png](icon.png) is based on:
