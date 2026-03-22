@@ -75,14 +75,14 @@
 ;; Format a datetime-local value (YYYY-MM-DDThh:mm) in locale-aware form
 (fn format-datetime [iso-str]
   (let [year  (string.match iso-str "^(%d%d%d%d)")
-        month (string.match iso-str "^%d%d%d%d%%-(%d%d)")
-        day   (string.match iso-str "^%d%d%d%d%%-%d%d%%-(%d%d)")
+        month (string.match iso-str "^%d%d%d%d%-(%d%d)")
+        day   (string.match iso-str "^%d%d%d%d%-%d%d%-(%d%d)")
         time  (string.match iso-str "T(%d%d:%d%d)")]
     (if (and year month day)
         (let [month-num (tonumber month)
               day-num   (tonumber day)]
           (if (= i18n.locale :de)
-              (let [months ["Januar" "Februar" "M\xc3\xa4rz" "April" "Mai" "Juni"
+              (let [months ["Januar" "Februar" "März" "April" "Mai" "Juni"
                             "Juli" "August" "September" "Oktober" "November" "Dezember"]]
                 (.. day-num ". " (. months month-num) " " year
                     (if time (.. ", " time " Uhr") "")))
