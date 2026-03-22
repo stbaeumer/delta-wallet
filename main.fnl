@@ -101,8 +101,7 @@
    [:small {} (i18n.text description-key)]])
 
 (fn send-to-chat []
-  (let [text-obj          (js.new js.global.Object)
-        title             (if (is-empty? :title) "Wallet Entry" RV.id.title.value)
+  (let [title             (if (is-empty? :title) "Wallet Entry" RV.id.title.value)
         description       (if (is-empty? :description) "" RV.id.description.value)
         url               (if (is-empty? :url) "" RV.id.url.value)
         datetime          (if (is-empty? :datetime) "" RV.id.datetime.value)
@@ -111,45 +110,41 @@
                                (icollect [_ f (ipairs state.files)] f.name)
                                ", ")
                               "")
-        qr-count          (if state.qrcode-file 1 0)
+        wallet-text       (.. "💳 " title
+                              (if (= description "") "" (.. "\n\n" description))
+                              (if (= url "") "" (.. "\n\n🔗 " url))
+                              (if (= datetime "") "" (.. "\n\n📅 " datetime))
+                              (if (= file-names "") "" (.. "\n\n📎 " file-names)))
         file-count        (# state.files)
-        attachment-count  (+ qr-count file-count)
-        message-count     (+ 1 attachment-count)]
-    ;; 1) Send wallet details as text message.
-    (set (. text-obj :text) (.. "💳 " title
-                                (if (= description "") "" (.. "\n\n" description))
-                                (if (= url "") "" (.. "\n\n🔗 " url))
-                                (if (= datetime "") "" (.. "\n\n📅 " datetime))
-                                (if (= file-names "") "" (.. "\n\n📎 " file-names))))
-    (webxdc:sendToChat text-obj)
+        message-count     (+ 1 file-count)]
 
-    ;; 2) Send QR image as real attachment so Delta Chat can render it.
-    (when state.qrcode-file
-      (let [qr-obj      (js.new js.global.Object)
-            qr-file-obj (js.new js.global.Object)]
-        (set (. qr-obj :text) "QR-Code")
-        (set (. qr-file-obj :name) (or state.qrcode-file.name "qrcode.png"))
-        (set (. qr-file-obj :blob) state.qrcode-file)
-        (set (. qr-obj :file) qr-file-obj)
-        (webxdc:sendToChat qr-obj)))
+    ;; 1) Wallet-Nachricht: Text + QR-Code-Bild in EINER Nachricht (falls QR vorhanden).
+    (let [main-obj (js.new js.global.Object)]
+      (set (. main-obj :text) wallet-text)
+      (when state.qrcode-file
+        (let [qr-file-obj (js.new js.global.Object)]
+          (set (. qr-file-obj :name) (or state.qrcode-file.name "qrcode.png"))
+          (set (. qr-file-obj :blob) state.qrcode-file)
+          (set (. main-obj :file) qr-file-obj)))
+      (webxdc:sendToChat main-obj))
 
-    ;; 3) Send each uploaded file as its own attachment message.
+    ;; 2) Jede weitere Datei als eigene Nachricht.
     (each [_ file (ipairs state.files)]
       (let [file-obj      (js.new js.global.Object)
             file-meta-obj (js.new js.global.Object)
             fname         (or file.name "attachment")]
-        (set (. file-obj :text) (.. "Anhang: " fname))
+        (set (. file-obj :text) (.. "📎 " fname))
         (set (. file-meta-obj :name) fname)
         (set (. file-meta-obj :blob) file)
         (set (. file-obj :file) file-meta-obj)
         (webxdc:sendToChat file-obj)))
 
-    ;; Visual confirmation in UI.
+    ;; Statusmeldung in der UI.
     (set state.send-feedback
-         (.. "✅ Gesendet: " message-count
-             " Nachricht(en), davon " attachment-count " Anhang/Anhänge."
-             (if (> qr-count 0) " QR-Code enthalten." "")))
-    ;; If auto-reset is on, clear the form right after sending.
+         (.. "✅ " message-count " Nachricht(en) gesendet"
+             (if state.qrcode-file " · QR-Code angehängt" "")
+             (if (> file-count 0) (.. " · " file-count " Datei(en) angehängt") "")
+             "."))
     (if state.auto-reset
         (reset)
         (app.render))))
