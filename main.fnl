@@ -15,7 +15,7 @@
 (local icons (require :icons))
 
 (local app {})
-(local state {:files []})
+(local state {:files [] :qrcode-data nil})
 
 ;; This creates the header of the app
 (render [:div {:class "container"}
@@ -23,14 +23,7 @@
           [:ul {}
            [:li {}
             [:div {:id "title"}
-             icons.wallet
-             [:b {} "💳 Delta Wallet"]]]]
-          [:ul {}
-           [:li {}
-            [:div {:role "button"
-                   :id "help"
-                   :onclick (fn []
-                  (log "Help clicked"))} "❓"]]]]] "#nav")
+             [:b {} "💳 Delta Wallet"]]]]]] "#nav")
 
 ;; Check if the input fields are filled or not.
 (fn is-empty? [key]
@@ -41,15 +34,36 @@
   (or (not (is-empty? :title))
       (not (is-empty? :description))
       (not (is-empty? :url))
-      (not (is-empty? :qrcode))
-      (not (is-empty? :datetime))))
+      (not= state.qrcode-data nil)
+      (not (is-empty? :datetime))
+      (> (# state.files) 0)))
 
 ;; Reset the form
 (fn reset []
-  (each [_ v (ipairs [:title :description :url :qrcode :datetime])]
+  (each [_ v (ipairs [:title :description :url :datetime])]
     (if (not (is-empty? v))
         (set (. RV.id v :value) "")))
   (set state.files [])
+  (set state.qrcode-data nil)
+  (app.render))
+
+;; Read a QR-Code image file and store as data URL
+(fn read-qr-code [el]
+  (let [file (. el.files 0)]
+    (when file
+      (let [reader (js.new js.global.FileReader)]
+        (set reader.onload (fn [ev]
+                             (set state.qrcode-data ev.target.result)
+                             (app.render)))
+        (reader:readAsDataURL file)))))
+
+;; Collect selected files into state
+(fn update-files [el]
+  (set state.files [])
+  (let [flist el.files
+        n     (. flist :length)]
+    (for [i 0 (- n 1)]
+      (table.insert state.files (. flist i))))
   (app.render))
 
 (fn input-template [id placeholder-key description-key]
@@ -70,17 +84,22 @@
    [:small {} (i18n.text description-key)]])
 
 (fn send-to-chat []
-  (let [obj (js.new js.global.Object)
-        title (if (is-empty? :title) "Wallet Entry" RV.id.title.value)
+  (let [obj        (js.new js.global.Object)
+        title      (if (is-empty? :title) "Wallet Entry" RV.id.title.value)
         description (if (is-empty? :description) "" RV.id.description.value)
-        url (if (is-empty? :url) "" RV.id.url.value)
-        datetime (if (is-empty? :datetime) "" RV.id.datetime.value)]
-    
+        url        (if (is-empty? :url) "" RV.id.url.value)
+        datetime   (if (is-empty? :datetime) "" RV.id.datetime.value)
+        file-names (if (> (# state.files) 0)
+                       (table.concat
+                         (icollect [_ f (ipairs state.files)] f.name)
+                         ", ")
+                       "")]
     ;; Build a formatted message
-    (set (. obj :text) (.. "💳 " title 
+    (set (. obj :text) (.. "💳 " title
                            (if (= description "") "" (.. "\n\n" description))
                            (if (= url "") "" (.. "\n\n🔗 " url))
-                           (if (= datetime "") "" (.. "\n\n📅 " datetime))))
+                           (if (= datetime "") "" (.. "\n\n📅 " datetime))
+                           (if (= file-names "") "" (.. "\n\n📎 " file-names))))
     (webxdc:sendToChat obj)))
 
 ;; Render function for rendering the whole page
@@ -92,10 +111,10 @@
       
       ;; Title
       [:label {:for "title"} 
-       [:div {:class "label-icon"} icons.wallet [:strong {} (i18n.text :title-field)]]]
+       [:div {:class "label-icon"} icons.title [:strong {} (i18n.text :title-field)]]]
       (input-template :title :title-placeholder :title-description)
-      
-           [:p {} "Version 0.0.1"]
+
+      ;; Description
       [:label {:for "description"} 
        [:div {:class "label-icon"} icons.description [:strong {} (i18n.text :description-field)]]]
       (textarea-template :description :description-placeholder :description-description)
@@ -105,21 +124,40 @@
        [:div {:class "label-icon"} icons.url [:strong {} (i18n.text :url-field)]]]
       (input-template :url :url-placeholder :url-description)
       
-      ;; QR-Code
+      ;; QR-Code - Bild hochladen
       [:label {:for "qrcode"} 
        [:div {:class "label-icon"} icons.qrcode [:strong {} (i18n.text :qrcode-field)]]]
-      (input-template :qrcode :qrcode-placeholder :qrcode-description)
+      [:div {}
+       [:input {:id "qrcode"
+                :type "file"
+                :accept "image/*"
+                :onchange read-qr-code}]
+       [:small {} (i18n.text :qrcode-description)]]
       
       ;; Date and Time
       [:label {:for "datetime"} 
        [:div {:class "label-icon"} icons.calendar [:strong {} (i18n.text :datetime-field)]]]
-      (input-template :datetime :datetime-placeholder :datetime-description)
+      [:div {}
+       [:input {:id "datetime"
+                :rvid "datetime"
+                :type "datetime-local"
+                :oninput (fn [el] (app.render))}]
+       [:small {} (i18n.text :datetime-description)]]
       
-      ;; Files (placeholder for future file handling)
-      [:label {} 
+      ;; Files - mehrere Dateien hochladen
+      [:label {:for "file-upload"} 
        [:div {:class "label-icon"} icons.files [:strong {} (i18n.text :files-field)]]]
-      [:small {} (i18n.text :files-description)]
-      [:small {:style "color: var(--pico-muted-color)"} "(Coming soon...)"]
+      [:div {}
+       [:input {:id "file-upload"
+                :type "file"
+                :multiple true
+                :onchange update-files}]
+       [:small {} (i18n.text :files-description)]
+       (if (> (# state.files) 0)
+           [:p {:class "wallet-file-list"}
+            (table.concat
+              (icollect [_ f (ipairs state.files)] f.name)
+              " · ")])]
       
       ;; Preview
       (if (form-has-content?)
@@ -137,14 +175,20 @@
                 [:p {:class "wallet-url"} 
                  icons.url 
                  [:a {:href RV.id.url.value :target "_blank"} RV.id.url.value]])
-            (if (not (is-empty? :qrcode))
+            (if (not= state.qrcode-data nil)
                 [:p {:class "wallet-qrcode"}
                  icons.qrcode
-                 [:img {:src RV.id.qrcode.value :alt "QR Code" :style "max-width: 150px; max-height: 150px;"}]])
+                 [:img {:src state.qrcode-data :alt "QR Code" :style "max-width: 150px; max-height: 150px;"}]])
             (if (not (is-empty? :datetime))
                 [:p {:class "wallet-datetime"}
                  icons.calendar
-                 [:span {} RV.id.datetime.value]])]]
+                 [:span {} RV.id.datetime.value]])
+            (if (> (# state.files) 0)
+                [:p {:class "wallet-files"}
+                 icons.attachment
+                 [:span {} (table.concat
+                             (icollect [_ f (ipairs state.files)] f.name)
+                             " · ")]])]]
           [:article {:class "example"}
            [:header {} (i18n.text :preview)]
            [:p {:style "color: var(--pico-muted-color)"} "Wallet-Vorschau erscheint hier..."]])

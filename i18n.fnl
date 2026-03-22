@@ -27,8 +27,8 @@
            :url-description "Link zu mehr Informationen oder dem Ticket"
 
            :qrcode-field "QR-Code"
-           :qrcode-placeholder "URL zum QR-Code-Bild"
-           :qrcode-description "URL eines QR-Code-Bildes (optional)"
+           :qrcode-placeholder ""
+           :qrcode-description "PNG-Bild des QR-Codes hochladen (optional)"
 
            :datetime-field "Datum und Uhrzeit"
            :datetime-placeholder "z.B. 15. März 2025, 20:00 Uhr"
@@ -65,8 +65,8 @@
            :url-description "Link for more information or the ticket"
 
            :qrcode-field "QR Code"
-           :qrcode-placeholder "URL to QR code image"
-           :qrcode-description "URL of a QR code image (optional)"
+           :qrcode-placeholder ""
+           :qrcode-description "Upload a PNG image of the QR code (optional)"
 
            :datetime-field "Date and Time"
            :datetime-placeholder "e.g., March 15, 2025, 8:00 PM"
