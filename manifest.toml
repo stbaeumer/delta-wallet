@@ -1,2 +1,3 @@
-name = "Found ICE"
-source_code_url = "https://codeberg.org/durian/found-ice"
+name = "💳 Delta Wallet"
+version = "0.0.1"
+source_code_url = "https://github.com/stbaeumer/delta-wallet"

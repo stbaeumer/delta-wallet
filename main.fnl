@@ -15,7 +15,7 @@
 (local icons (require :icons))
 
 (local app {})
-(local state {:feedback false})
+(local state {:files []})
 
 ;; This creates the header of the app
 (render [:div {:class "container"}
@@ -23,189 +23,159 @@
           [:ul {}
            [:li {}
             [:div {:id "title"}
-             icons.message
-             [:b {} "Found ICE"]]]]
+             icons.wallet
+             [:b {} "💳 Delta Wallet"]]]]
           [:ul {}
            [:li {}
             [:div {:role "button"
-                   :id "donate"
+                   :id "help"
                    :onclick (fn []
-                              (set state.feedback true)
-                              (app.render))} icons.coffee]]]]] "#nav")
+                              (log "Help clicked"))} "❓"]]]] "#nav")
 
 ;; Check if the input fields are filled or not.
 (fn is-empty? [key]
   (or (= (?. RV.id key :value) nil) (= (?. RV.id key :value) "")))
 
-;; Check if all the fields are empty.
-(fn form-empty? []
-  (and (is-empty? :size)
-       (is-empty? :activity)
-       (is-empty? :location)
-       (is-empty? :uniform)
-       (is-empty? :time)
-       (is-empty? :equipment)))
+;; Check if any required field is filled
+(fn form-has-content? []
+  (or (not (is-empty? :title))
+      (not (is-empty? :description))
+      (not (is-empty? :url))
+      (not (is-empty? :qrcode))
+      (not (is-empty? :datetime))))
 
-;; Strip the current values in the form when the reset button is pressed
-;; We run (is-empty?) first because RV.id.<key> might not exist yet.
+;; Reset the form
 (fn reset []
-  (each [_ v (ipairs [:size :activity :location :uniform :time :equipment])]
+  (each [_ v (ipairs [:title :description :url :qrcode :datetime])]
     (if (not (is-empty? v))
         (set (. RV.id v :value) "")))
+  (set state.files [])
   (app.render))
 
-(fn input-template [id]
+(fn input-template [id placeholder-key description-key]
   [:div {}
    [:input {:id id
             :rvid id
-            :placeholder (i18n.text (.. id "-placeholder"))
+            :type "text"
+            :placeholder (i18n.text placeholder-key)
             :oninput (fn [el] (app.render))}]
-   [:small {} (i18n.text (.. id "-description"))]])
+   [:small {} (i18n.text description-key)]])
+
+(fn textarea-template [id placeholder-key description-key]
+  [:div {}
+   [:textarea {:id id
+               :rvid id
+               :placeholder (i18n.text placeholder-key)
+               :oninput (fn [el] (app.render))}]
+   [:small {} (i18n.text description-key)]])
 
 (fn send-to-chat []
-  (let [obj (js.new js.global.Object)]
-    (set (. obj :text) (.. "🚨 " (i18n.text :spotted) " "
-                           (if (is-empty? :location)
-                               ""
-                               RV.id.location.value)
-                           (if (is-empty? :time)
-                               ""
-                               (.. ", " RV.id.time.value))
-                           (if (is-empty? :size)
-                               ""
-                               (.. " " RV.id.size.value))
-                           (if (is-empty? :activity)
-                               ""
-                               (.. " " RV.id.activity.value))
-                           (if (is-empty? :uniform)
-                               ""
-                               (.. " " (i18n.text :in) " " RV.id.uniform.value))
-                           (if (is-empty? :equipment)
-                               ""
-                               (.. " " (i18n.text :with) " " RV.id.equipment.value))))
+  (let [obj (js.new js.global.Object)
+        title (if (is-empty? :title) "Wallet Entry" RV.id.title.value)
+        description (if (is-empty? :description) "" RV.id.description.value)
+        url (if (is-empty? :url) "" RV.id.url.value)
+        datetime (if (is-empty? :datetime) "" RV.id.datetime.value)]
+    
+    ;; Build a formatted message
+    (set (. obj :text) (.. "💳 " title 
+                           (if (= description "") "" (.. "\n\n" description))
+                           (if (= url "") "" (.. "\n\n🔗 " url))
+                           (if (= datetime "") "" (.. "\n\n📅 " datetime))))
     (webxdc:sendToChat obj)))
 
-;; Render function for rendering the whole page.
+;; Render function for rendering the whole page
 (fn app.render []
   (render
    [:div {}
-
-    ;; Feedback
-    (if state.feedback
-        [:dialog {:open true}
-         [:article {}
-          [:header {}
-           [:strong {} "Thanks for using!"]]
-          [:p {}
-           "You can leave feedback and download more tools on " [:a {:href "durianbean.itch.io"} "durianbean.itch.io"] " if you're interested."]
-          [:p {} "Let me know what you think!"]
-          [:button {:ariaLabel "close" :onclick (fn []
-                                                  (set state.feedback false)
-                                                  (app.render))} "Close"]]]
-        [:dialog {:open false}])
-
     [:form {}
-
      [:fieldset {}
-      ;; Size
-      ;; ---------
-      [:label {:for "size"} [:div {:class "label-icon"} icons.people [:strong {} (i18n.text :size)]]]
-      (input-template :size)
       
-      ;; Activity
-      ;; ---------
-      [:label {:for "activity"} [:div {:class "label-icon"} icons.donut [:strong {} (i18n.text :activity)]]]
-      (input-template :activity)
+      ;; Title
+      [:label {:for "title"} 
+       [:div {:class "label-icon"} icons.wallet [:strong {} (i18n.text :title-field)]]]
+      (input-template :title :title-placeholder :title-description)
       
-      ;; Location
-      ;; ---------
-      [:label {:for "location"} [:div {:class "label-icon"} icons.location [:strong {} (i18n.text :location)]]]
-      (input-template :location)
+           [:p {} "Version 0.0.1"]
+      [:label {:for "description"} 
+       [:div {:class "label-icon"} icons.description [:strong {} (i18n.text :description-field)]]]
+      (textarea-template :description :description-placeholder :description-description)
       
-      ;; Uniform
-      ;; ---------
-      [:label {:for "uniform"} [:div {:class "label-icon"} icons.uniform [:strong {} (i18n.text :uniform)]]]
-      (input-template :uniform)
+      ;; URL
+      [:label {:for "url"} 
+       [:div {:class "label-icon"} icons.url [:strong {} (i18n.text :url-field)]]]
+      (input-template :url :url-placeholder :url-description)
       
-      ;; Time
-      ;; ---------
-      [:label {:for "time"} [:div {:class "label-icon"} icons.time [:strong {} (i18n.text :time)]]]
-      [:fieldset {:role "group"}
-       [:input {:id "time"
-                :rvid "time"
-                :placeholder (i18n.text :time-placeholder)
-                :oninput (fn [el] (app.render))}]
-       [:input {:type "button"
-                :value (i18n.text :now)
-                :onclick #(let [date (js.new js.global.Date)]
-                            (set RV.id.time.value (date:toLocaleTimeString i18n.locale))
-                            (app.render))}]]
-      [:small {} (i18n.text :time-description)]
-
-      ;; Equipment
-      ;; ---------
-      [:label {:for "equipment"} [:div {:class "label-icon"} icons.equipment [:strong {} (i18n.text :equipment)]]]
-      (input-template :equipment)
+      ;; QR-Code
+      [:label {:for "qrcode"} 
+       [:div {:class "label-icon"} icons.qrcode [:strong {} (i18n.text :qrcode-field)]]]
+      (input-template :qrcode :qrcode-placeholder :qrcode-description)
       
-     ;; Only display the example when all the inputs are empty
-     (if (form-empty?)
-         
-         [:article {}
-          [:header {} "Preview message"]
-          
-          [:div {:class "example"}
-           [:p {} (.. "🚨 " (i18n.text :spotted) " "
-                      (i18n.text :location-placeholder)
-                      (.. ", " (i18n.text :time-placeholder)))]
-           [:p {} (.. (i18n.text :size-placeholder)
-                      (.. " " (i18n.text :activity-placeholder))
-                      (.. " " (i18n.text :in) " " (i18n.text :uniform-placeholder))
-                      (.. " " (i18n.text :with) " " (i18n.text :equipment-placeholder)))]]]
-         
-         [:article {}
-          [:header {} "Message"]
-          
-          [:div {:class ""}
-           [:p {} (.. "🚨 " (i18n.text :spotted) " "
-                      (if (is-empty? :location)
-                          ""
-                          RV.id.location.value)
-                      (if (is-empty? :time)
-                          ""
-                          (.. ", " RV.id.time.value)))]
-           [:p {} (.. (if (is-empty? :size)
-                          ""
-                          RV.id.size.value)
-                      (if (is-empty? :activity)
-                          ""
-                          (.. " " RV.id.activity.value))
-                      (if (is-empty? :uniform)
-                          ""
-                          (.. " " (i18n.text :in) " " RV.id.uniform.value))
-                      (if (is-empty? :equipment)
-                          ""
-                          (.. " " (i18n.text :with) " " RV.id.equipment.value)))]]])
-
-      [:input {:type "button" :class "primary" :disabled (if (form-empty?) true false) :value "Send" :onclick send-to-chat}]
-      [:input {:type "button" :class "outline" :value "Reset" :onclick reset :disabled (if (form-empty?) true false)}]]
-
-    ]]"main"))
+      ;; Date and Time
+      [:label {:for "datetime"} 
+       [:div {:class "label-icon"} icons.calendar [:strong {} (i18n.text :datetime-field)]]]
+      (input-template :datetime :datetime-placeholder :datetime-description)
+      
+      ;; Files (placeholder for future file handling)
+      [:label {} 
+       [:div {:class "label-icon"} icons.files [:strong {} (i18n.text :files-field)]]]
+      [:small {} (i18n.text :files-description)]
+      [:small {:style "color: var(--pico-muted-color)"} "(Coming soon...)"]
+      
+      ;; Preview
+      (if (form-has-content?)
+          [:article {}
+           [:header {} (i18n.text :preview)]
+           [:div {:class "wallet-card"}
+            [:div {:class "wallet-header"}
+             icons.wallet
+             [:h3 {} (if (is-empty? :title) "Wallet Entry" RV.id.title.value)]]
+            (if (not (is-empty? :description))
+                [:p {:class "wallet-description"} 
+                 icons.description
+                 [:span {} RV.id.description.value]])
+            (if (not (is-empty? :url))
+                [:p {:class "wallet-url"} 
+                 icons.url 
+                 [:a {:href RV.id.url.value :target "_blank"} RV.id.url.value]])
+            (if (not (is-empty? :qrcode))
+                [:p {:class "wallet-qrcode"}
+                 icons.qrcode
+                 [:img {:src RV.id.qrcode.value :alt "QR Code" :style "max-width: 150px; max-height: 150px;"}]])
+            (if (not (is-empty? :datetime))
+                [:p {:class "wallet-datetime"}
+                 icons.calendar
+                 [:span {} RV.id.datetime.value]])]]
+          [:article {:class "example"}
+           [:header {} (i18n.text :preview)]
+           [:p {:style "color: var(--pico-muted-color)"} "Wallet-Vorschau erscheint hier..."]])
+      
+      ;; Buttons
+      [:div {:class "button-group"}
+       [:input {:type "button" 
+                :class "primary" 
+                :disabled (if (form-has-content?) false true) 
+                :value (i18n.text :send) 
+                :onclick send-to-chat}]
+       [:input {:type "button" 
+                :class "outline" 
+                :value (i18n.text :reset) 
+                :onclick reset 
+                :disabled (if (form-has-content?) false true)}]]]]
+    ]"main"))
 
 (app.render)
 
 ;; The footer is in here instead of index.fnl because we want the text to
-;; change based on the language of the app. This shows the description of the app,
-;; the license, and language switcher.
+;; change based on the language of the app.
 (render [:div {} 
          (i18n.text :description)
          [:select {:name "select" :ariaLabel (i18n.text :select-language) :onchange i18n.setLang}
           [:option {:selected "" :value "" :disabled ""} (i18n.text :language)]
-          [:option {:value "en"} "English"]
-          [:option {:value "es"} "Spanish"]]
+          [:option {:value "de"} "Deutsch"]
+          [:option {:value "en"} "English"]]
          [:div {:id "version"}
           [:hr {}]
-          [:p {} "Version 0.1.4"]
-          [:p {} (i18n.text :fuck-cops)]
+          [:p {} "Version 0.2.0"]
           [:hr {}]
           [:p {:class "license"} (i18n.text :anti-capitalist)]
-          [:p {:class "license"} "Anti-Capitalist Software License (v1.4)"]]] "#footer")
+          [:p {:class "license"} (i18n.text :open-source)]]] "#footer")

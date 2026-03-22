@@ -4,84 +4,81 @@
 
 (set i18n.data 
      {
+      ;; German - Default
+      :de {:description [:div {}
+                         [:p {} [:b {} "💳 Delta Wallet"] " ist eine App zum Erstellen und Teilen von Wallet-Einträgen. Speichere Tickets, Coupons, Mitgliedskarten und Zertifikate."]
+                         [:p {} "Einfach die Informationen eingeben, ein schönes Wallet-Card-Format erhalten und direkt mit Freunden teilen!"]]
+           :select-language "Sprache wählen"
+           :language "Sprache"
+           :open-source "Diese ist eine Open-Source-App"
+           :anti-capitalist "Quelloffen und gemeinfrei"
+
+           ;; Titles
+           :title-field "Titel"
+           :title-placeholder "z.B. Kinoticket"
+           :title-description "Name oder Bezeichnung des Wallet-Eintrags"
+
+           :description-field "Beschreibung"
+           :description-placeholder "z.B. Filmtitel, Datum, Sitz"
+           :description-description "Zusätzliche Details zum Eintrag"
+
+           :url-field "URL"
+           :url-placeholder "z.B. https://kino.de/ticket/12345"
+           :url-description "Link zu mehr Informationen oder dem Ticket"
+
+           :qrcode-field "QR-Code"
+           :qrcode-placeholder "URL zum QR-Code-Bild"
+           :qrcode-description "URL eines QR-Code-Bildes (optional)"
+
+           :datetime-field "Datum und Uhrzeit"
+           :datetime-placeholder "z.B. 15. März 2025, 20:00 Uhr"
+           :datetime-description "Wann ist dieser Eintrag relevant?"
+           :now "Jetzt"
+
+           :files-field "Dateien"
+           :files-description "PDF, Bilder oder andere Dateien anhängen (optional)"
+
+           :preview "Vorschau"
+           :send "Senden"
+           :reset "Zurücksetzen"
+           }
       ;; English
       :en {:description [:div {}
-                         [:p {} [:b {} "Found ICE"] " is a tool to write down a possible ICE sighting using the SALUTE template (size, activity, location, uniform, time, equipment) and send it to those opposing ICE in the area."]
-                         [:p {} "This tool is based on the template hosted on "
-                          [:a {:href "https://salute.kyr.digital"} "salute.kyr.digital"]]]
+                         [:p {} [:b {} "💳 Delta Wallet"] " is an app for creating and sharing wallet entries. Store tickets, coupons, membership cards and certificates."]
+                         [:p {} "Simply enter the information, get a beautiful wallet card format and share it directly with friends!"]]
            :select-language "Select language"
            :language "Language"
-           :fuck-cops "Fuck Cops 🐖"
-           :anti-capitalist "This is anti-capitalist software, released for free use by individuals and organizations that do not operate by capitalist principles."
+           :open-source "This is an open-source app"
+           :anti-capitalist "Open source and public domain"
 
-           :spotted "SPOTTED @"
-           
-           :size "Size"
-           :size-placeholder "5 DHS cops"
-           :size-description "How many agents/officers?"
+           ;; Titles
+           :title-field "Title"
+           :title-placeholder "e.g., Cinema Ticket"
+           :title-description "Name or designation of the wallet entry"
 
-           :activity "Activity"
-           :activity-placeholder "standing outside of a donut shop"
-           :activity-description "What are they doing?"
+           :description-field "Description"
+           :description-placeholder "e.g., Movie title, date, seat"
+           :description-description "Additional details about the entry"
 
-           :location "Location"
-           :location-placeholder "43rd and Woodland"
-           :location-description "What is the address or neighborhood?"
+           :url-field "URL"
+           :url-placeholder "e.g., https://cinema.co.uk/ticket/12345"
+           :url-description "Link for more information or the ticket"
 
-           :uniform "Uniform"
-           :uniform-placeholder "DHS vests"
-           :uniform-description "Letters and patches visible on jackets/vests/vehicles"
+           :qrcode-field "QR Code"
+           :qrcode-placeholder "URL to QR code image"
+           :qrcode-description "URL of a QR code image (optional)"
 
-           :time "Time"
-           :time-placeholder "1:12 PM"
-           :time-description "When did you witness this?"
+           :datetime-field "Date and Time"
+           :datetime-placeholder "e.g., March 15, 2025, 8:00 PM"
+           :datetime-description "When is this entry relevant?"
            :now "Now"
-           
-           :equipment "Equipment"
-           :equipment-placeholder "guns and handcuffs"
-           :equipment-description "What do they have with them?"
 
-           :with "with"
-           :in "in"
-           }
-      ;; Spanish
-      :es {:description [:div {}
-                         [:p {} [:b {} "Found ICE"] " es una herramienta para anotar un posible avistamiento de ICE usando la plantilla SALUTE (tamaño, actividad, ubicación, uniforme, hora, equipo) y enviarla a quienes se oponen a ICE en la zona."]
-                         [:p {} "Esta herramienta se basa en la plantilla alojada en " [:a {:href "https://salute.kyr.digital"} "salute.kyr.digital"]]]
-           :select-language "Seleccionar idioma"
-           :language "Idioma"
-           :fuck-cops "¡Chinga la migra! 🐖"
-           :anti-capitalist "Este es un software anticapitalista, publicado para uso gratuito por personas y organizaciones que no operan según principios capitalistas."
+           :files-field "Files"
+           :files-description "Attach PDFs, images or other files (optional)"
 
-           :spotted "AVISTAMIENTO en"
-           
-           :size "Tamaño"
-           :size-placeholder "5 agentes del DHS"
-           :size-description "¿Cuántos agentes/oficiales?"
-
-           :activity "Actividad"
-           :activity-placeholder "De pie afuera de una tienda de donas"
-           :activity-description "¿Qué están haciendo?"
-
-           :location "Ubicación"
-           :location-placeholder "43ª y Woodland"
-           :location-description "¿Cuál es la dirección o el vecindario?"
-
-           :uniform "Uniforme"
-           :uniform-placeholder "Chalecos del DHS"
-           :uniform-description "Letras y parches visibles en chaquetas/chalecos/vehículos"
-
-           :time "Hora"
-           :time-placeholder "1:12 PM"
-           :time-description "¿Cuando fuiste testigo de esto?"
-           :now "Ahora"
-           
-           :equipment "Equipo"
-           :equipment-placeholder "armas y esposas"
-           :equipment-description "¿Qué tienen consigo?"
-
-           :with "y"
-           :in "con"
+           :preview "Preview"
+           :send "Send"
+           :reset "Reset"
            }
       })
 
@@ -104,17 +101,18 @@
         (. i18n.data :en key))))
 
 (fn checkLang []
-  ;; Default is English
-  (var found :en)
+  ;; Default is German (Deutsch)
+  (var found :de)
   ;; If the user agent prefers a different language, we switch to that
-  (each [_ lang (ipairs [:en :es])]
+  (each [_ lang (ipairs [:de :en])]
     (if (string.match js.global.navigator.language (.. "^" lang))
-        (set found lang))) found)
+        (set found lang))) 
+  found)
 
 (let [saved (js.global.localStorage:getItem :lang)
       lang  (if (= saved js.null) (checkLang) saved)]
   (case lang
-    :en    (lang-apply lang :ltr)
-    :es    (lang-apply lang :ltr)))
+    :de    (lang-apply lang :ltr)
+    :en    (lang-apply lang :ltr)))
 
 i18n
