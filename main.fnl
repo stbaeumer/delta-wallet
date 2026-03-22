@@ -15,7 +15,7 @@
 (local icons (require :icons))
 
 (local app {})
-(local state {:files [] :qrcode-data nil})
+(local state {:files [] :qrcode-data nil :qrcode-file nil})
 
 ;; This creates the header of the app
 (render [:div {:class "container"}
@@ -45,17 +45,24 @@
         (set (. RV.id v :value) "")))
   (set state.files [])
   (set state.qrcode-data nil)
+  (set state.qrcode-file nil)
   (app.render))
 
 ;; Read a QR-Code image file and store as data URL
 (fn read-qr-code [el]
   (let [file (. el.files 0)]
-    (when file
-      (let [reader (js.new js.global.FileReader)]
-        (set reader.onload (fn [ev]
-                             (set state.qrcode-data ev.target.result)
-                             (app.render)))
-        (reader:readAsDataURL file)))))
+    (if file
+        (do
+          (set state.qrcode-file file)
+          (let [reader (js.new js.global.FileReader)]
+            (set reader.onload (fn [ev]
+                                 (set state.qrcode-data ev.target.result)
+                                 (app.render)))
+            (reader:readAsDataURL file)))
+        (do
+          (set state.qrcode-file nil)
+          (set state.qrcode-data nil)
+          (app.render)))))
 
 ;; Collect selected files into state
 (fn update-files [el]
@@ -84,23 +91,42 @@
    [:small {} (i18n.text description-key)]])
 
 (fn send-to-chat []
-  (let [obj        (js.new js.global.Object)
-        title      (if (is-empty? :title) "Wallet Entry" RV.id.title.value)
+  (let [text-obj    (js.new js.global.Object)
+        title       (if (is-empty? :title) "Wallet Entry" RV.id.title.value)
         description (if (is-empty? :description) "" RV.id.description.value)
-        url        (if (is-empty? :url) "" RV.id.url.value)
-        datetime   (if (is-empty? :datetime) "" RV.id.datetime.value)
-        file-names (if (> (# state.files) 0)
-                       (table.concat
-                         (icollect [_ f (ipairs state.files)] f.name)
-                         ", ")
-                       "")]
-    ;; Build a formatted message
-    (set (. obj :text) (.. "💳 " title
-                           (if (= description "") "" (.. "\n\n" description))
-                           (if (= url "") "" (.. "\n\n🔗 " url))
-                           (if (= datetime "") "" (.. "\n\n📅 " datetime))
-                           (if (= file-names "") "" (.. "\n\n📎 " file-names))))
-    (webxdc:sendToChat obj)))
+        url         (if (is-empty? :url) "" RV.id.url.value)
+        datetime    (if (is-empty? :datetime) "" RV.id.datetime.value)
+        file-names  (if (> (# state.files) 0)
+                        (table.concat
+                          (icollect [_ f (ipairs state.files)] f.name)
+                          ", ")
+                        "")]
+    ;; 1) Send wallet details as text message.
+    (set (. text-obj :text) (.. "💳 " title
+                                (if (= description "") "" (.. "\n\n" description))
+                                (if (= url "") "" (.. "\n\n🔗 " url))
+                                (if (= datetime "") "" (.. "\n\n📅 " datetime))
+                                (if (= file-names "") "" (.. "\n\n📎 " file-names))))
+    (webxdc:sendToChat text-obj)
+
+    ;; 2) Send QR image as real attachment so Delta Chat can render it.
+    (when state.qrcode-file
+      (let [qr-obj (js.new js.global.Object)]
+        (set (. qr-obj :text) "QR-Code")
+        (set (. qr-obj :file) state.qrcode-file)
+        (set (. qr-obj :name) (or state.qrcode-file.name "qrcode.png"))
+        (set (. qr-obj :filename) (or state.qrcode-file.name "qrcode.png"))
+        (webxdc:sendToChat qr-obj)))
+
+    ;; 3) Send each uploaded file as its own attachment message.
+    (each [_ file (ipairs state.files)]
+      (let [file-obj (js.new js.global.Object)
+            fname    (or file.name "attachment")]
+        (set (. file-obj :text) (.. "Anhang: " fname))
+        (set (. file-obj :file) file)
+        (set (. file-obj :name) fname)
+        (set (. file-obj :filename) fname)
+        (webxdc:sendToChat file-obj)))))
 
 ;; Render function for rendering the whole page
 (fn app.render []
