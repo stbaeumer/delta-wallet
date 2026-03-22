@@ -58,7 +58,35 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y lua5.3 lua-filesystem lua-posix zip fennel
+          sudo apt-get install -y lua5.3 lua-filesystem lua-posix zip curl
+
+          # Install fennel from GitHub raw with fallbacks.
+          FENNEL_VERSION="1.5.3"
+          FENNEL_URL=""
+          for url in \
+            "https://raw.githubusercontent.com/bakpakin/Fennel/v${FENNEL_VERSION}/fennel" \
+            "https://raw.githubusercontent.com/bakpakin/Fennel/${FENNEL_VERSION}/fennel" \
+            "https://raw.githubusercontent.com/bakpakin/Fennel/main/fennel"; do
+            if curl -fsSL "$url" -o /tmp/fennel; then
+              FENNEL_URL="$url"
+              break
+            fi
+          done
+
+          if [ -z "$FENNEL_URL" ]; then
+            echo "Failed to download fennel from all known URLs."
+            exit 1
+          fi
+
+          if ! head -n 1 /tmp/fennel | grep -q '^#!'; then
+            echo "Downloaded fennel file is invalid (missing shebang)."
+            head -n 5 /tmp/fennel || true
+            exit 1
+          fi
+
+          chmod +x /tmp/fennel
+          sudo install -m 0755 /tmp/fennel /usr/local/bin/fennel
+          echo "Installed fennel from: $FENNEL_URL"
           fennel --version
       
       - name: Build app
