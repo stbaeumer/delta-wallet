@@ -41,6 +41,7 @@
            :preview "Vorschau"
            :send "Senden"
            :reset "Zurücksetzen"
+           :auto-reset "Formular nach dem Senden automatisch leeren"
            }
       ;; English
       :en {:description [:div {}
@@ -79,6 +80,7 @@
            :preview "Preview"
            :send "Send"
            :reset "Reset"
+           :auto-reset "Clear form automatically after sending"
            }
       })
 

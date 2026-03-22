@@ -15,7 +15,13 @@
 (local icons (require :icons))
 
 (local app {})
-(local state {:files [] :qrcode-data nil :qrcode-file nil})
+;; auto-reset preference is persisted in localStorage
+(local state {:files [] :qrcode-data nil :qrcode-file nil :send-feedback nil
+              :auto-reset (= (js.global.localStorage:getItem :auto-reset) :true)})
+
+;; Some handlers receive the element, others an event; normalize both cases.
+(fn get-input-target [el-or-event]
+  (or el-or-event.target el-or-event))
 
 ;; This creates the header of the app
 (render [:div {:class "container"}
@@ -46,17 +52,20 @@
   (set state.files [])
   (set state.qrcode-data nil)
   (set state.qrcode-file nil)
+  (set state.send-feedback nil)
   (app.render))
 
 ;; Read a QR-Code image file and store as data URL
 (fn read-qr-code [el]
-  (let [file (. el.files 0)]
+  (let [target (get-input-target el)
+        file   (. target.files 0)]
     (if file
         (do
           (set state.qrcode-file file)
           (let [reader (js.new js.global.FileReader)]
             (set reader.onload (fn [ev]
-                                 (set state.qrcode-data ev.target.result)
+                                 (set state.qrcode-data (or (?. ev :target :result)
+                                                             reader.result))
                                  (app.render)))
             (reader:readAsDataURL file)))
         (do
@@ -67,7 +76,8 @@
 ;; Collect selected files into state
 (fn update-files [el]
   (set state.files [])
-  (let [flist el.files
+  (let [target (get-input-target el)
+        flist  target.files
         n     (. flist :length)]
     (for [i 0 (- n 1)]
       (table.insert state.files (. flist i))))
@@ -91,16 +101,20 @@
    [:small {} (i18n.text description-key)]])
 
 (fn send-to-chat []
-  (let [text-obj    (js.new js.global.Object)
-        title       (if (is-empty? :title) "Wallet Entry" RV.id.title.value)
-        description (if (is-empty? :description) "" RV.id.description.value)
-        url         (if (is-empty? :url) "" RV.id.url.value)
-        datetime    (if (is-empty? :datetime) "" RV.id.datetime.value)
-        file-names  (if (> (# state.files) 0)
-                        (table.concat
-                          (icollect [_ f (ipairs state.files)] f.name)
-                          ", ")
-                        "")]
+  (let [text-obj          (js.new js.global.Object)
+        title             (if (is-empty? :title) "Wallet Entry" RV.id.title.value)
+        description       (if (is-empty? :description) "" RV.id.description.value)
+        url               (if (is-empty? :url) "" RV.id.url.value)
+        datetime          (if (is-empty? :datetime) "" RV.id.datetime.value)
+        file-names        (if (> (# state.files) 0)
+                              (table.concat
+                               (icollect [_ f (ipairs state.files)] f.name)
+                               ", ")
+                              "")
+        qr-count          (if state.qrcode-file 1 0)
+        file-count        (# state.files)
+        attachment-count  (+ qr-count file-count)
+        message-count     (+ 1 attachment-count)]
     ;; 1) Send wallet details as text message.
     (set (. text-obj :text) (.. "💳 " title
                                 (if (= description "") "" (.. "\n\n" description))
@@ -111,22 +125,34 @@
 
     ;; 2) Send QR image as real attachment so Delta Chat can render it.
     (when state.qrcode-file
-      (let [qr-obj (js.new js.global.Object)]
+      (let [qr-obj      (js.new js.global.Object)
+            qr-file-obj (js.new js.global.Object)]
         (set (. qr-obj :text) "QR-Code")
-        (set (. qr-obj :file) state.qrcode-file)
-        (set (. qr-obj :name) (or state.qrcode-file.name "qrcode.png"))
-        (set (. qr-obj :filename) (or state.qrcode-file.name "qrcode.png"))
+        (set (. qr-file-obj :name) (or state.qrcode-file.name "qrcode.png"))
+        (set (. qr-file-obj :blob) state.qrcode-file)
+        (set (. qr-obj :file) qr-file-obj)
         (webxdc:sendToChat qr-obj)))
 
     ;; 3) Send each uploaded file as its own attachment message.
     (each [_ file (ipairs state.files)]
-      (let [file-obj (js.new js.global.Object)
-            fname    (or file.name "attachment")]
+      (let [file-obj      (js.new js.global.Object)
+            file-meta-obj (js.new js.global.Object)
+            fname         (or file.name "attachment")]
         (set (. file-obj :text) (.. "Anhang: " fname))
-        (set (. file-obj :file) file)
-        (set (. file-obj :name) fname)
-        (set (. file-obj :filename) fname)
-        (webxdc:sendToChat file-obj)))))
+        (set (. file-meta-obj :name) fname)
+        (set (. file-meta-obj :blob) file)
+        (set (. file-obj :file) file-meta-obj)
+        (webxdc:sendToChat file-obj)))
+
+    ;; Visual confirmation in UI.
+    (set state.send-feedback
+         (.. "✅ Gesendet: " message-count
+             " Nachricht(en), davon " attachment-count " Anhang/Anhänge."
+             (if (> qr-count 0) " QR-Code enthalten." "")))
+    ;; If auto-reset is on, clear the form right after sending.
+    (if state.auto-reset
+        (reset)
+        (app.render))))
 
 ;; Render function for rendering the whole page
 (fn app.render []
@@ -219,6 +245,19 @@
            [:header {} (i18n.text :preview)]
            [:p {:style "color: var(--pico-muted-color)"} "Wallet-Vorschau erscheint hier..."]])
       
+      ;; Auto-reset checkbox
+      [:label {:class "auto-reset-label"}
+       [:input {:id "auto-reset"
+                :type "checkbox"
+                :checked state.auto-reset
+                :onchange (fn [el]
+                            (let [target (get-input-target el)]
+                              (set state.auto-reset target.checked)
+                              (js.global.localStorage:setItem :auto-reset
+                                (if target.checked :true :false))
+                              (app.render)))}]
+       (i18n.text :auto-reset)]
+
       ;; Buttons
       [:div {:class "button-group"}
        [:input {:type "button" 
@@ -230,7 +269,9 @@
                 :class "outline" 
                 :value (i18n.text :reset) 
                 :onclick reset 
-                :disabled (if (form-has-content?) false true)}]]]]
+                :disabled (if (form-has-content?) false true)}]]
+      (if state.send-feedback
+          [:p {:class "send-feedback"} state.send-feedback])]]
     ]"main"))
 
 (app.render)

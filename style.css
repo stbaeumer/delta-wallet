@@ -191,3 +191,28 @@ textarea {
     border-color: var(--wallet-orange);
 }
 
+.send-feedback {
+    margin-top: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--wallet-green);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--wallet-green) 12%, white);
+    color: var(--wallet-green);
+    font-weight: 600;
+}
+
+.auto-reset-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--pico-muted-color);
+    cursor: pointer;
+}
+
+.auto-reset-label input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
