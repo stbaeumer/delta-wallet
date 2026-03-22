@@ -5,7 +5,7 @@
 
               :title "<svg aria-hidden='true' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><rect x='3.5' y='3.5' width='17' height='17' rx='2' fill='currentColor' opacity='.12'/><rect x='3.5' y='3.5' width='17' height='17' rx='2' stroke='currentColor' fill='none' stroke-width='1.5'/><path d='M7 9h10M7 12h10M7 15h6' stroke='currentColor' stroke-width='1.5' stroke-linecap='round'/></svg>"
 
-              :description "<svg aria-hidden='true' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><rect x='4' y='3.5' width='16' height='17' rx='2' fill='currentColor' opacity='.12'/><rect x='4' y='3.5' width='16' height='17' rx='2' stroke='currentColor' fill='none' stroke-width='1.5'/><path d='M7 9h10M7 12h10M7 15h7' stroke='currentColor' stroke-width='1.5' stroke-linecap='round'/></svg>"
+              :description "<svg aria-hidden='true' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><rect x='3' y='3' width='18' height='18' rx='2' fill='currentColor' opacity='.15'/><rect x='3' y='3' width='18' height='18' rx='2' stroke='currentColor' fill='none' stroke-width='1.5'/><rect x='6' y='8.25' width='12' height='1.5' rx='.75' fill='currentColor'/><rect x='6' y='11.25' width='12' height='1.5' rx='.75' fill='currentColor'/><rect x='6' y='14.25' width='8' height='1.5' rx='.75' fill='currentColor'/></svg>"
 
               :url "<svg aria-hidden='true' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M10 14l4-4M8.5 15.5l-1.6 1.6a3 3 0 1 1-4.2-4.2l3-3a3 3 0 0 1 4.2 0M15.5 8.5l1.6-1.6a3 3 0 0 1 4.2 4.2l-3 3a3 3 0 0 1-4.2 0' stroke='currentColor' fill='none' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>"
 
@@ -19,6 +19,8 @@
 
               :attachment "<svg aria-hidden='true' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M8.5 12.5l5.8-5.8a3 3 0 1 1 4.2 4.2l-6.8 6.8a5 5 0 1 1-7.1-7.1l7-7' stroke='currentColor' fill='none' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/></svg>"
 
-              :pdf "<svg aria-hidden='true' xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24'><!-- PDF icon --><path fill='currentColor' d='M12 2c-5.523 0-10 4.477-10 10s4.477 10 10 10 10-4.477 10-10-4.477-10-10-10m0 1.5c4.696 0 8.5 3.804 8.5 8.5S16.696 20.5 12 20.5 3.5 16.696 3.5 12 7.304 3.5 12 3.5' opacity='.5'/><path fill='currentColor' d='M8 8h2v8H8zm6 0h2v8h-2zM6 14h12v2H6z'/></svg>"})
+              :pdf "<svg aria-hidden='true' xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24'><!-- PDF icon --><path fill='currentColor' d='M12 2c-5.523 0-10 4.477-10 10s4.477 10 10 10 10-4.477 10-10-4.477-10-10-10m0 1.5c4.696 0 8.5 3.804 8.5 8.5S16.696 20.5 12 20.5 3.5 16.696 3.5 12 7.304 3.5 12 3.5' opacity='.5'/><path fill='currentColor' d='M8 8h2v8H8zm6 0h2v8h-2zM6 14h12v2H6z'/></svg>"
+
+              :location "<svg aria-hidden='true' xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M12 2a7 7 0 0 0-7 7c0 4.5 7 13 7 13s7-8.5 7-13a7 7 0 0 0-7-7Z' fill='currentColor' opacity='.2'/><path d='M12 2a7 7 0 0 0-7 7c0 4.5 7 13 7 13s7-8.5 7-13a7 7 0 0 0-7-7Z' stroke='currentColor' fill='none' stroke-width='1.5' stroke-linejoin='round'/><circle cx='12' cy='9' r='2.5' fill='currentColor'/></svg>"})
 
 icons

@@ -16,7 +16,7 @@
 
 (local app {})
 ;; auto-reset preference is persisted in localStorage
-(local state {:files [] :qrcode-data nil :qrcode-file nil :send-feedback nil
+(local state {:qrcode-data nil :qrcode-file nil :send-feedback nil
               :auto-reset (= (js.global.localStorage:getItem :auto-reset) :true)})
 
 ;; Some handlers receive the element, others an event; normalize both cases.
@@ -42,14 +42,13 @@
       (not (is-empty? :url))
       (not= state.qrcode-data nil)
       (not (is-empty? :datetime))
-      (> (# state.files) 0)))
+      (not (is-empty? :location))))
 
 ;; Reset the form
 (fn reset []
-  (each [_ v (ipairs [:title :description :url :datetime])]
+  (each [_ v (ipairs [:title :description :url :datetime :location])]
     (if (not (is-empty? v))
         (set (. RV.id v :value) "")))
-  (set state.files [])
   (set state.qrcode-data nil)
   (set state.qrcode-file nil)
   (set state.send-feedback nil)
@@ -73,15 +72,25 @@
           (set state.qrcode-data nil)
           (app.render)))))
 
-;; Collect selected files into state
-(fn update-files [el]
-  (set state.files [])
-  (let [target (get-input-target el)
-        flist  target.files
-        n     (. flist :length)]
-    (for [i 0 (- n 1)]
-      (table.insert state.files (. flist i))))
-  (app.render))
+;; Format a datetime-local value (YYYY-MM-DDThh:mm) in locale-aware form
+(fn format-datetime [iso-str]
+  (let [year  (string.match iso-str "^(%d%d%d%d)")
+        month (string.match iso-str "^%d%d%d%d%%-(%d%d)")
+        day   (string.match iso-str "^%d%d%d%d%%-%d%d%%-(%d%d)")
+        time  (string.match iso-str "T(%d%d:%d%d)")]
+    (if (and year month day)
+        (let [month-num (tonumber month)
+              day-num   (tonumber day)]
+          (if (= i18n.locale :de)
+              (let [months ["Januar" "Februar" "M\xc3\xa4rz" "April" "Mai" "Juni"
+                            "Juli" "August" "September" "Oktober" "November" "Dezember"]]
+                (.. day-num ". " (. months month-num) " " year
+                    (if time (.. ", " time " Uhr") "")))
+              (let [months ["January" "February" "March" "April" "May" "June"
+                            "July" "August" "September" "October" "November" "December"]]
+                (.. (. months month-num) " " day-num ", " year
+                    (if time (.. ", " time) "")))))
+        iso-str)))
 
 (fn input-template [id placeholder-key description-key]
   [:div {}
@@ -101,24 +110,17 @@
    [:small {} (i18n.text description-key)]])
 
 (fn send-to-chat []
-  (let [title             (if (is-empty? :title) "Wallet Entry" RV.id.title.value)
-        description       (if (is-empty? :description) "" RV.id.description.value)
-        url               (if (is-empty? :url) "" RV.id.url.value)
-        datetime          (if (is-empty? :datetime) "" RV.id.datetime.value)
-        file-names        (if (> (# state.files) 0)
-                              (table.concat
-                               (icollect [_ f (ipairs state.files)] f.name)
-                               ", ")
-                              "")
-        wallet-text       (.. "💳 " title
-                              (if (= description "") "" (.. "\n\n" description))
-                              (if (= url "") "" (.. "\n\n🔗 " url))
-                              (if (= datetime "") "" (.. "\n\n📅 " datetime))
-                              (if (= file-names "") "" (.. "\n\n📎 " file-names)))
-        file-count        (# state.files)
-        message-count     (+ 1 file-count)]
-
-    ;; 1) Wallet-Nachricht: Text + QR-Code-Bild in EINER Nachricht (falls QR vorhanden).
+  (let [title       (if (is-empty? :title) "Wallet Entry" RV.id.title.value)
+        description (if (is-empty? :description) "" RV.id.description.value)
+        url         (if (is-empty? :url) "" RV.id.url.value)
+        datetime    (if (is-empty? :datetime) "" (format-datetime RV.id.datetime.value))
+        location    (if (is-empty? :location) "" RV.id.location.value)
+        wallet-text (.. "💳 " title
+                        (if (= description "") "" (.. "\n\n" description))
+                        (if (= url "") "" (.. "\n\n🔗 " url))
+                        (if (= datetime "") "" (.. "\n\n📅 " datetime))
+                        (if (= location "") "" (.. "\n\n📍 " location)))]
+    ;; Wallet-Nachricht: Text + QR-Code-Bild in EINER Nachricht.
     (let [main-obj (js.new js.global.Object)]
       (set (. main-obj :text) wallet-text)
       (when state.qrcode-file
@@ -127,23 +129,10 @@
           (set (. qr-file-obj :blob) state.qrcode-file)
           (set (. main-obj :file) qr-file-obj)))
       (webxdc:sendToChat main-obj))
-
-    ;; 2) Jede weitere Datei als eigene Nachricht.
-    (each [_ file (ipairs state.files)]
-      (let [file-obj      (js.new js.global.Object)
-            file-meta-obj (js.new js.global.Object)
-            fname         (or file.name "attachment")]
-        (set (. file-obj :text) (.. "📎 " fname))
-        (set (. file-meta-obj :name) fname)
-        (set (. file-meta-obj :blob) file)
-        (set (. file-obj :file) file-meta-obj)
-        (webxdc:sendToChat file-obj)))
-
     ;; Statusmeldung in der UI.
     (set state.send-feedback
-         (.. "✅ " message-count " Nachricht(en) gesendet"
+         (.. "✅ Gesendet"
              (if state.qrcode-file " · QR-Code angehängt" "")
-             (if (> file-count 0) (.. " · " file-count " Datei(en) angehängt") "")
              "."))
     (if state.auto-reset
         (reset)
@@ -177,7 +166,7 @@
       [:div {}
        [:input {:id "qrcode"
                 :type "file"
-                :accept "image/*"
+                :accept "image/png"
                 :onchange read-qr-code}]
        [:small {} (i18n.text :qrcode-description)]]
       
@@ -191,21 +180,11 @@
                 :oninput (fn [el] (app.render))}]
        [:small {} (i18n.text :datetime-description)]]
       
-      ;; Files - mehrere Dateien hochladen
-      [:label {:for "file-upload"} 
-       [:div {:class "label-icon"} icons.files [:strong {} (i18n.text :files-field)]]]
-      [:div {}
-       [:input {:id "file-upload"
-                :type "file"
-                :multiple true
-                :onchange update-files}]
-       [:small {} (i18n.text :files-description)]
-       (if (> (# state.files) 0)
-           [:p {:class "wallet-file-list"}
-            (table.concat
-              (icollect [_ f (ipairs state.files)] f.name)
-              " · ")])]
-      
+      ;; Treffpunkt (optional)
+      [:label {:for "location"}
+       [:div {:class "label-icon"} icons.location [:strong {} (i18n.text :location-field)]]]
+      (input-template :location :location-placeholder :location-description)
+
       ;; Preview
       (if (form-has-content?)
           [:article {}
@@ -229,13 +208,11 @@
             (if (not (is-empty? :datetime))
                 [:p {:class "wallet-datetime"}
                  icons.calendar
-                 [:span {} RV.id.datetime.value]])
-            (if (> (# state.files) 0)
-                [:p {:class "wallet-files"}
-                 icons.attachment
-                 [:span {} (table.concat
-                             (icollect [_ f (ipairs state.files)] f.name)
-                             " · ")]])]]
+                 [:span {} (format-datetime RV.id.datetime.value)]])
+            (if (not (is-empty? :location))
+                [:p {:class "wallet-location"}
+                 icons.location
+                 [:span {} RV.id.location.value]])]]
           [:article {:class "example"}
            [:header {} (i18n.text :preview)]
            [:p {:style "color: var(--pico-muted-color)"} "Wallet-Vorschau erscheint hier..."]])

@@ -152,6 +152,20 @@ form > label {
     width: 18px;
 }
 
+.wallet-location {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin: 0.75rem 0;
+    color: var(--pico-muted-color);
+}
+
+.wallet-location svg {
+    height: 18px;
+    width: 18px;
+    flex-shrink: 0;
+}
+
 textarea {
     resize: vertical;
     min-height: 100px;

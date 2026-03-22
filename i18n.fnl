@@ -38,6 +38,10 @@
            :files-field "Dateien"
            :files-description "PDF, Bilder oder andere Dateien anhängen (optional)"
 
+           :location-field "Treffpunkt"
+           :location-placeholder "z.B. Hauptbahnhof Berlin, Gleis 7"
+           :location-description "Wo findet der Termin statt? (optional)"
+
            :preview "Vorschau"
            :send "Senden"
            :reset "Zurücksetzen"
@@ -76,6 +80,10 @@
 
            :files-field "Files"
            :files-description "Attach PDFs, images or other files (optional)"
+
+           :location-field "Location"
+           :location-placeholder "e.g., Berlin Central Station, Platform 7"
+           :location-description "Where does the appointment take place? (optional)"
 
            :preview "Preview"
            :send "Send"
