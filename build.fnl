@@ -3,6 +3,7 @@
 (local fennel (require :fennel))
 (local build (require :build-helpers))
 (local posix (require :posix))
+(local ci? (not= nil (os.getenv "CI")))
 
 ;; Let's do some building!
 ;;
@@ -25,46 +26,76 @@
       ;; These are the files that we want to watch
       ;; (not recursive, only the current directory is watched)
       modified (build.files-modified [:fnl :css :js])]
+
+  (fn run-cmd [cmd]
+    (print "Command" cmd)
+    (let [(ok _ code) (os.execute cmd)]
+      (if (or (= ok true) (= ok 0) (= code 0))
+          true
+          (do
+            (print "Command failed" cmd)
+            false))))
+
+  (fn compile-lua-file [file from to]
+    (let [filename (.. file "." from)]
+      (case (io.open filename :r)
+        f (let [source (f:read :*a)]
+            (f:close)
+            (let [(ok lua-source) (pcall fennel.compile-string source
+                                         {:filename filename
+                                          :requireAsInclude true})]
+              (if ok
+                  (do
+                    (build.write-lua (.. file "." to) lua-source)
+                    true)
+                  (do
+                    (print lua-source)
+                    false))))
+        (nil err) (do
+                    (print "Could not read" filename err)
+                    false))))
+
+  (fn build-once []
+    (var success? true)
+    (print "\n 🔄 Rebuilding files ...\n")
+    (each [_ { : file : from : to } (ipairs files)]
+      (case to
+        :html
+        (let [(ok contents-or-error) (pcall fennel.dofile (.. file "." from))]
+          (if ok
+              (build.write-html (.. file "." to)
+                                (contents-or-error.html build))
+              (do
+                (print contents-or-error)
+                (set success? false))))
+
+        :lua
+        (when (not (compile-lua-file file from to))
+          (set success? false))))
+
+    (when success?
+      (each [_ cmd (ipairs cmds)]
+        (when (not (run-cmd cmd))
+          (set success? false))))
+
+    success?)
   
   (fn build-loop []
     ;; Rebuild the files whenever they're modified
     (when (modified)
-      
-      (print "\n 🔄 Rebuilding files ...\n")
-      (each [_ { : file : from : to } (ipairs files)]
-        (case to          
-          ;; Load the Lua table then write it into a file
-          ;; index.fnl -> index.html
-          :html
-          (let [contents (fennel.dofile (.. file "." from))]
-            (build.write-html (.. file "." to)
-                              (contents.html build)))
-
-          ;; Load the Fennel files and compile them into Lua
-          ;; main.fnl -> main.lua
-          :lua
-          (case (io.open (.. file "." from) :r)
-            f (let [(ok luaSource) (pcall #(fennel.compile f {:requireAsInclude true}))]
-                (case ok
-                  true (build.write-lua (.. file "." to) luaSource)
-                  false (print luaSource))
-                (f:close))
-            (nil err) (print "Could not read" (.. file "." from) err))))
-
-      ;; Create our webxdc app
-      (each [_ cmd (ipairs cmds)]
-        (print "Command" cmd)
-        (os.execute cmd)))
+      (build-once))
 
     ;; Let's pause the program for a bit
     (coroutine.yield)
     (build-loop))
-  
-  (let [co (coroutine.create build-loop)]
-    (while true
-      (coroutine.resume co)
-      ;; We can use (os.clock) but that seems to consume
-      ;; quite a bit of CPU. Sleep seems much more efficient.
-      (posix.sleep 1))))
+
+  (if ci?
+      (os.exit (if (build-once) 0 1))
+      (let [co (coroutine.create build-loop)]
+        (while true
+          (coroutine.resume co)
+          ;; We can use (os.clock) but that seems to consume
+          ;; quite a bit of CPU. Sleep seems much more efficient.
+          (posix.sleep 1)))))
 
 

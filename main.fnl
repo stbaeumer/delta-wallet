@@ -30,7 +30,7 @@
             [:div {:role "button"
                    :id "help"
                    :onclick (fn []
-                              (log "Help clicked"))} "❓"]]]] "#nav")
+                  (log "Help clicked"))} "❓"]]]]] "#nav")
 
 ;; Check if the input fields are filled or not.
 (fn is-empty? [key]
