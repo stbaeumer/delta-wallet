@@ -116,7 +116,7 @@
         datetime    (if (is-empty? :datetime) "" (format-datetime RV.id.datetime.value))
         location    (if (is-empty? :location) "" RV.id.location.value)
         wallet-text (.. "💳 " title
-                        (if (= description "") "" (.. "\n\n" description))
+                        (if (= description "") "" (.. "\n\n📝 " description))
                         (if (= url "") "" (.. "\n\n🔗 " url))
                         (if (= datetime "") "" (.. "\n\n📅 " datetime))
                         (if (= location "") "" (.. "\n\n📍 " location)))]
